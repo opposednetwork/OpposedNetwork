@@ -1,1 +1,27 @@
+--------------------------------------------------
+-- OPPOSED NETWORK LOADER
+--------------------------------------------------
 
+local placeId = game.PlaceId
+
+local Games = {
+
+-- Example
+[123456789] = "https://raw.githubusercontent.com/opposednetwork/OpposedNetwork/refs/heads/main/petfactory.lua",
+[987654321] = "https://raw.githubusercontent.com/opposednetwork/OpposedNetwork/refs/heads/main/myrestaurant.lua"
+
+}
+
+local Universal = "https://raw.githubusercontent.com/opposednetwork/OpposedNetwork/refs/heads/main/universal.lua"
+
+--------------------------------------------------
+-- LOAD GAME SCRIPT
+--------------------------------------------------
+
+local Script = Games[placeId]
+
+if Script then
+    loadstring(game:HttpGet(Script))()
+else
+    loadstring(game:HttpGet(Universal))()
+end
