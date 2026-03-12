@@ -1,296 +1,214 @@
--- Opposed Network UI Library
--- Clean, Modern, Easy to Modify
+-------------------------------------------------
+-- KEY SYSTEM
+-------------------------------------------------
 
-local OpposedUI = {}
-local UIS = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
-
--- Color Theme
-local Theme = {
-    Background = Color3.fromRGB(18,18,18),
-    Sidebar = Color3.fromRGB(22,22,22),
-    Element = Color3.fromRGB(32,32,32),
-    Hover = Color3.fromRGB(45,45,45),
-    Accent = Color3.fromRGB(0,170,255),
-    Text = Color3.fromRGB(255,255,255)
+local Keys = {
+    "Opposed2026",
+    "BetaAccess",
+    "OpposedNetwork"
 }
 
-function OpposedUI:CreateWindow(title)
+local keyValid = false
 
--- MAIN GUI
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "OpposedNetworkUI"
-ScreenGui.Parent = game.CoreGui
-
--- MAIN FRAME
-local Main = Instance.new("Frame")
-Main.Size = UDim2.new(0,700,0,450)
-Main.Position = UDim2.new(0.5,-350,0.5,-225)
-Main.BackgroundColor3 = Theme.Background
-Main.Parent = ScreenGui
-
-Instance.new("UICorner",Main).CornerRadius = UDim.new(0,8)
-
--- TOPBAR
-local TopBar = Instance.new("Frame")
-TopBar.Size = UDim2.new(1,0,0,45)
-TopBar.BackgroundColor3 = Theme.Sidebar
-TopBar.Parent = Main
-
-Instance.new("UICorner",TopBar).CornerRadius = UDim.new(0,8)
-
-local Title = Instance.new("TextLabel")
-Title.Text = title
-Title.Size = UDim2.new(1,0,1,0)
-Title.BackgroundTransparency = 1
-Title.TextColor3 = Theme.Text
-Title.Font = Enum.Font.GothamBold
-Title.TextSize = 16
-Title.Parent = TopBar
-
--- SIDEBAR
-local Sidebar = Instance.new("Frame")
-Sidebar.Size = UDim2.new(0,170,1,-45)
-Sidebar.Position = UDim2.new(0,0,0,45)
-Sidebar.BackgroundColor3 = Theme.Sidebar
-Sidebar.Parent = Main
-
-local SidebarLayout = Instance.new("UIListLayout")
-SidebarLayout.Padding = UDim.new(0,8)
-SidebarLayout.Parent = Sidebar
-
-local SidebarPadding = Instance.new("UIPadding")
-SidebarPadding.PaddingTop = UDim.new(0,10)
-SidebarPadding.PaddingLeft = UDim.new(0,10)
-SidebarPadding.PaddingRight = UDim.new(0,10)
-SidebarPadding.Parent = Sidebar
-
--- CONTENT AREA
-local Content = Instance.new("Frame")
-Content.Size = UDim2.new(1,-170,1,-45)
-Content.Position = UDim2.new(0,170,0,45)
-Content.BackgroundTransparency = 1
-Content.Parent = Main
-
--- DRAGGING SYSTEM
-local dragging
-local dragStart
-local startPos
-
-TopBar.InputBegan:Connect(function(input)
-
-if input.UserInputType == Enum.UserInputType.MouseButton1 then
-dragging = true
-dragStart = input.Position
-startPos = Main.Position
+for i,v in pairs(Keys) do
+    if v == getgenv().OpposedKey then
+        keyValid = true
+    end
 end
 
-end)
-
-UIS.InputChanged:Connect(function(input)
-
-if dragging then
-
-local delta = input.Position - dragStart
-
-Main.Position = UDim2.new(
-startPos.X.Scale,
-startPos.X.Offset + delta.X,
-startPos.Y.Scale,
-startPos.Y.Offset + delta.Y
-)
-
+if not keyValid then
+    warn("Invalid key")
+    return
 end
 
-end)
+-------------------------------------------------
+-- LOAD ORION
+-------------------------------------------------
 
-UIS.InputEnded:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseButton1 then
-dragging = false
-end
-end)
+local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/jensonhirst/Orion/main/source"))()
 
----------------------------------------------------
--- WINDOW API
----------------------------------------------------
+-------------------------------------------------
+-- WINDOW
+-------------------------------------------------
 
-local Window = {}
+local Window = OrionLib:MakeWindow({
+	Name = "Opposed Network",
+	HidePremium = false,
+	SaveConfig = true,
+	ConfigFolder = "OpposedNetwork"
+})
 
-function Window:CreateTab(name)
+-------------------------------------------------
+-- TABS
+-------------------------------------------------
 
--- TAB BUTTON
-local TabButton = Instance.new("TextButton")
-TabButton.Size = UDim2.new(1,0,0,40)
-TabButton.BackgroundColor3 = Theme.Element
-TabButton.Text = name
-TabButton.Font = Enum.Font.Gotham
-TabButton.TextColor3 = Theme.Text
-TabButton.TextSize = 14
-TabButton.Parent = Sidebar
+local MainTab = Window:MakeTab({
+	Name = "Main",
+	Icon = "rbxassetid://4483345998"
+})
 
-Instance.new("UICorner",TabButton).CornerRadius = UDim.new(0,6)
+local CombatTab = Window:MakeTab({
+	Name = "Combat",
+	Icon = "rbxassetid://4483345998"
+})
 
--- PAGE
-local Page = Instance.new("ScrollingFrame")
-Page.Size = UDim2.new(1,0,1,0)
-Page.Visible = false
-Page.CanvasSize = UDim2.new(0,0,0,0)
-Page.BackgroundTransparency = 1
-Page.Parent = Content
+local PlayerTab = Window:MakeTab({
+	Name = "Player",
+	Icon = "rbxassetid://4483345998"
+})
 
-local Layout = Instance.new("UIListLayout")
-Layout.Padding = UDim.new(0,10)
-Layout.Parent = Page
+local FarmTab = Window:MakeTab({
+	Name = "Farm",
+	Icon = "rbxassetid://4483345998"
+})
 
-local Padding = Instance.new("UIPadding")
-Padding.PaddingTop = UDim.new(0,10)
-Padding.PaddingLeft = UDim.new(0,10)
-Padding.PaddingRight = UDim.new(0,10)
-Padding.Parent = Page
+local SettingsTab = Window:MakeTab({
+	Name = "Settings",
+	Icon = "rbxassetid://4483345998"
+})
 
--- TAB SWITCH
-TabButton.MouseButton1Click:Connect(function()
+-------------------------------------------------
+-- MAIN TAB
+-------------------------------------------------
 
-for _,v in pairs(Content:GetChildren()) do
-if v:IsA("ScrollingFrame") then
-v.Visible = false
-end
-end
+MainTab:AddSection({
+	Name = "Opposed Network"
+})
 
-Page.Visible = true
+MainTab:AddButton({
+	Name = "Copy Discord",
+	Callback = function()
+		setclipboard("https://discord.gg/YOURSERVER")
+		OrionLib:MakeNotification({
+			Name = "Opposed Network",
+			Content = "Discord copied to clipboard",
+			Time = 4
+		})
+	end
+})
 
-end)
+MainTab:AddButton({
+	Name = "Rejoin Server",
+	Callback = function()
+		game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
+	end
+})
 
----------------------------------------------------
--- TAB ELEMENTS
----------------------------------------------------
+-------------------------------------------------
+-- COMBAT TAB
+-------------------------------------------------
 
-local Tab = {}
+CombatTab:AddToggle({
+	Name = "Hitbox Expander",
+	Default = false,
+	Callback = function(Value)
 
--- BUTTON
-function Tab:CreateButton(text,callback)
+		getgenv().Hitbox = Value
 
-local Button = Instance.new("TextButton")
-Button.Size = UDim2.new(1,0,0,38)
-Button.BackgroundColor3 = Theme.Element
-Button.Text = text
-Button.Font = Enum.Font.Gotham
-Button.TextSize = 14
-Button.TextColor3 = Theme.Text
-Button.Parent = Page
+		while getgenv().Hitbox do
 
-Instance.new("UICorner",Button).CornerRadius = UDim.new(0,6)
+			for i,v in pairs(workspace:GetDescendants()) do
+				if v.Name == "HumanoidRootPart" then
+					v.Size = Vector3.new(15,15,15)
+					v.Transparency = 0.7
+					v.CanCollide = false
+				end
+			end
 
-Button.MouseEnter:Connect(function()
-TweenService:Create(Button,TweenInfo.new(0.15),{BackgroundColor3 = Theme.Hover}):Play()
-end)
+			task.wait()
 
-Button.MouseLeave:Connect(function()
-TweenService:Create(Button,TweenInfo.new(0.15),{BackgroundColor3 = Theme.Element}):Play()
-end)
+		end
+	end
+})
 
-Button.MouseButton1Click:Connect(callback)
+-------------------------------------------------
+-- PLAYER TAB
+-------------------------------------------------
 
-end
+PlayerTab:AddSlider({
+	Name = "WalkSpeed",
+	Min = 16,
+	Max = 200,
+	Default = 16,
+	Increment = 1,
+	ValueName = "Speed",
+	Callback = function(Value)
 
--- TOGGLE
-function Tab:CreateToggle(text,callback)
+		game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
 
-local Toggle = Instance.new("TextButton")
-Toggle.Size = UDim2.new(1,0,0,38)
-Toggle.BackgroundColor3 = Theme.Element
-Toggle.Text = text.." : OFF"
-Toggle.Font = Enum.Font.Gotham
-Toggle.TextSize = 14
-Toggle.TextColor3 = Theme.Text
-Toggle.Parent = Page
+	end
+})
 
-Instance.new("UICorner",Toggle).CornerRadius = UDim.new(0,6)
+PlayerTab:AddSlider({
+	Name = "JumpPower",
+	Min = 50,
+	Max = 200,
+	Default = 50,
+	Increment = 1,
+	ValueName = "Power",
+	Callback = function(Value)
 
-local state = false
+		game.Players.LocalPlayer.Character.Humanoid.JumpPower = Value
 
-Toggle.MouseButton1Click:Connect(function()
+	end
+})
 
-state = not state
-Toggle.Text = text.." : "..(state and "ON" or "OFF")
+-------------------------------------------------
+-- FARM TAB
+-------------------------------------------------
 
-callback(state)
+FarmTab:AddToggle({
+	Name = "Auto Farm",
+	Default = false,
+	Callback = function(Value)
 
-end)
+		getgenv().AutoFarm = Value
+
+		while getgenv().AutoFarm do
+
+			print("Farming...")
+
+			task.wait(1)
+
+		end
+	end
+})
+
+-------------------------------------------------
+-- SETTINGS TAB
+-------------------------------------------------
+
+SettingsTab:AddButton({
+	Name = "Destroy UI",
+	Callback = function()
+		OrionLib:Destroy()
+	end
+})
+
+-------------------------------------------------
+-- GAME DETECTION
+-------------------------------------------------
+
+local PlaceId = game.PlaceId
+
+if PlaceId == 123456789 then
+
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/opposednetwork/OpposedNetwork/main/GameScript.lua"))()
 
 end
 
--- SLIDER
-function Tab:CreateSlider(text,min,max,callback)
+-------------------------------------------------
+-- NOTIFICATION
+-------------------------------------------------
 
-local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(1,0,0,50)
-Frame.BackgroundColor3 = Theme.Element
-Frame.Parent = Page
+OrionLib:MakeNotification({
+	Name = "Opposed Network",
+	Content = "Hub Loaded Successfully",
+	Time = 5
+})
 
-Instance.new("UICorner",Frame).CornerRadius = UDim.new(0,6)
+-------------------------------------------------
+-- INIT
+-------------------------------------------------
 
-local Label = Instance.new("TextLabel")
-Label.Text = text
-Label.Size = UDim2.new(1,0,0.5,0)
-Label.BackgroundTransparency = 1
-Label.Font = Enum.Font.Gotham
-Label.TextColor3 = Theme.Text
-Label.TextSize = 14
-Label.Parent = Frame
-
-local Bar = Instance.new("Frame")
-Bar.Size = UDim2.new(1,-20,0,6)
-Bar.Position = UDim2.new(0,10,1,-15)
-Bar.BackgroundColor3 = Color3.fromRGB(50,50,50)
-Bar.Parent = Frame
-
-Instance.new("UICorner",Bar).CornerRadius = UDim.new(0,4)
-
-Bar.InputBegan:Connect(function(input)
-
-if input.UserInputType == Enum.UserInputType.MouseButton1 then
-
-local move
-
-move = UIS.InputChanged:Connect(function(input)
-
-if input.UserInputType == Enum.UserInputType.MouseMovement then
-
-local percent = math.clamp(
-(input.Position.X - Bar.AbsolutePosition.X) / Bar.AbsoluteSize.X,
-0,
-1
-)
-
-local value = math.floor(min + (max-min)*percent)
-
-Label.Text = text.." : "..value
-
-callback(value)
-
-end
-
-end)
-
-UIS.InputEnded:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseButton1 then
-move:Disconnect()
-end
-end)
-
-end
-
-end)
-
-end
-
-return Tab
-
-end
-
-return Window
-
-end
-
-return OpposedUI
+OrionLib:Init()
