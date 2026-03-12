@@ -1,7 +1,15 @@
-local UI = {}
+--// MeerlyUI - Simple Clean Hub Library
+--// Designed to be easy to read and modify
+
+local MeerlyUI = {}
+
 local UIS = game:GetService("UserInputService")
 
-function UI:CreateWindow(title)
+function MeerlyUI:CreateWindow(title)
+
+-------------------------------------------------
+-- CREATE MAIN UI
+-------------------------------------------------
 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Parent = game.CoreGui
@@ -9,175 +17,224 @@ ScreenGui.Parent = game.CoreGui
 local Main = Instance.new("Frame")
 Main.Size = UDim2.new(0,650,0,420)
 Main.Position = UDim2.new(0.5,-325,0.5,-210)
-Main.BackgroundColor3 = Color3.fromRGB(24,24,24)
+Main.BackgroundColor3 = Color3.fromRGB(18,18,18)
 Main.Parent = ScreenGui
 
-local Top = Instance.new("TextLabel")
-Top.Size = UDim2.new(1,0,0,40)
-Top.BackgroundColor3 = Color3.fromRGB(18,18,18)
-Top.Text = title
-Top.TextColor3 = Color3.new(1,1,1)
-Top.TextSize = 20
-Top.Font = Enum.Font.GothamBold
-Top.Parent = Main
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0,8)
+MainCorner.Parent = Main
 
-local Tabs = Instance.new("Frame")
-Tabs.Size = UDim2.new(0,150,1,-40)
-Tabs.Position = UDim2.new(0,0,0,40)
-Tabs.BackgroundColor3 = Color3.fromRGB(28,28,28)
-Tabs.Parent = Main
+-------------------------------------------------
+-- TOP BAR
+-------------------------------------------------
 
-local Pages = Instance.new("Frame")
-Pages.Size = UDim2.new(1,-150,1,-40)
-Pages.Position = UDim2.new(0,150,0,40)
-Pages.BackgroundTransparency = 1
-Pages.Parent = Main
+local TopBar = Instance.new("TextLabel")
+TopBar.Size = UDim2.new(1,0,0,40)
+TopBar.BackgroundColor3 = Color3.fromRGB(24,24,24)
+TopBar.Text = title
+TopBar.TextColor3 = Color3.new(1,1,1)
+TopBar.Font = Enum.Font.GothamBold
+TopBar.TextSize = 16
+TopBar.Parent = Main
+
+-------------------------------------------------
+-- SIDEBAR
+-------------------------------------------------
+
+local Sidebar = Instance.new("Frame")
+Sidebar.Size = UDim2.new(0,160,1,-40)
+Sidebar.Position = UDim2.new(0,0,0,40)
+Sidebar.BackgroundColor3 = Color3.fromRGB(24,24,24)
+Sidebar.Parent = Main
+
+local TabLayout = Instance.new("UIListLayout")
+TabLayout.Parent = Sidebar
+TabLayout.Padding = UDim.new(0,6)
+
+-------------------------------------------------
+-- CONTENT AREA
+-------------------------------------------------
+
+local Content = Instance.new("Frame")
+Content.Size = UDim2.new(1,-160,1,-40)
+Content.Position = UDim2.new(0,160,0,40)
+Content.BackgroundTransparency = 1
+Content.Parent = Main
+
+-------------------------------------------------
+-- DRAG SYSTEM
+-------------------------------------------------
 
 local dragging
-local dragInput
 local dragStart
 local startPos
 
-local function update(input)
+TopBar.InputBegan:Connect(function(input)
+if input.UserInputType == Enum.UserInputType.MouseButton1 then
+dragging = true
+dragStart = input.Position
+startPos = Main.Position
+end
+end)
+
+UIS.InputEnded:Connect(function(input)
+if input.UserInputType == Enum.UserInputType.MouseButton1 then
+dragging = false
+end
+end)
+
+UIS.InputChanged:Connect(function(input)
+
+if dragging then
+
 local delta = input.Position - dragStart
+
 Main.Position = UDim2.new(
 startPos.X.Scale,
 startPos.X.Offset + delta.X,
 startPos.Y.Scale,
 startPos.Y.Offset + delta.Y
 )
+
 end
 
-Top.InputBegan:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseButton1 then
-dragging = true
-dragStart = input.Position
-startPos = Main.Position
-
-input.Changed:Connect(function()
-if input.UserInputState == Enum.UserInputState.End then
-dragging = false
-end
-end)
-end
 end)
 
-Top.InputChanged:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseMovement then
-dragInput = input
-end
-end)
-
-UIS.InputChanged:Connect(function(input)
-if input == dragInput and dragging then
-update(input)
-end
-end)
-
-UIS.InputBegan:Connect(function(input)
-if input.KeyCode == Enum.KeyCode.RightShift then
-Main.Visible = not Main.Visible
-end
-end)
+-------------------------------------------------
+-- WINDOW FUNCTIONS
+-------------------------------------------------
 
 local Window = {}
 
-function Window:Notify(text)
-
-local Notify = Instance.new("TextLabel")
-Notify.Size = UDim2.new(0,250,0,40)
-Notify.Position = UDim2.new(1,-260,1,-50)
-Notify.BackgroundColor3 = Color3.fromRGB(35,35,35)
-Notify.TextColor3 = Color3.new(1,1,1)
-Notify.Text = text
-Notify.Parent = ScreenGui
-
-task.wait(3)
-
-Notify:Destroy()
-
-end
-
 function Window:CreateTab(name)
 
+-------------------------------------
+-- TAB BUTTON
+-------------------------------------
+
 local TabButton = Instance.new("TextButton")
-TabButton.Size = UDim2.new(1,0,0,35)
+TabButton.Size = UDim2.new(1,0,0,40)
+TabButton.BackgroundColor3 = Color3.fromRGB(30,30,30)
 TabButton.Text = name
-TabButton.BackgroundColor3 = Color3.fromRGB(35,35,35)
 TabButton.TextColor3 = Color3.new(1,1,1)
-TabButton.Parent = Tabs
+TabButton.Font = Enum.Font.Gotham
+TabButton.TextSize = 14
+TabButton.Parent = Sidebar
+
+local Corner = Instance.new("UICorner")
+Corner.Parent = TabButton
+
+-------------------------------------
+-- PAGE
+-------------------------------------
 
 local Page = Instance.new("ScrollingFrame")
 Page.Size = UDim2.new(1,0,1,0)
 Page.Visible = false
 Page.CanvasSize = UDim2.new(0,0,0,0)
 Page.BackgroundTransparency = 1
-Page.Parent = Pages
+Page.Parent = Content
 
 local Layout = Instance.new("UIListLayout")
-Layout.Padding = UDim.new(0,6)
 Layout.Parent = Page
+Layout.Padding = UDim.new(0,8)
+
+-------------------------------------
+-- SWITCH PAGE
+-------------------------------------
 
 TabButton.MouseButton1Click:Connect(function()
-for _,v in pairs(Pages:GetChildren()) do
+
+for _,v in pairs(Content:GetChildren()) do
 if v:IsA("ScrollingFrame") then
 v.Visible = false
 end
 end
+
 Page.Visible = true
+
 end)
 
+-------------------------------------
+-- TAB FUNCTIONS
+-------------------------------------
+
 local Tab = {}
+
+-------------------------------------------------
+-- BUTTON
+-------------------------------------------------
 
 function Tab:CreateButton(text,callback)
 
 local Button = Instance.new("TextButton")
 Button.Size = UDim2.new(1,-10,0,40)
-Button.BackgroundColor3 = Color3.fromRGB(40,40,40)
+Button.BackgroundColor3 = Color3.fromRGB(35,35,35)
 Button.Text = text
 Button.TextColor3 = Color3.new(1,1,1)
+Button.Font = Enum.Font.Gotham
+Button.TextSize = 14
 Button.Parent = Page
+
+local Corner = Instance.new("UICorner")
+Corner.Parent = Button
 
 Button.MouseButton1Click:Connect(callback)
 
 end
 
+-------------------------------------------------
+-- TOGGLE
+-------------------------------------------------
+
 function Tab:CreateToggle(text,callback)
 
 local Toggle = Instance.new("TextButton")
 Toggle.Size = UDim2.new(1,-10,0,40)
-Toggle.BackgroundColor3 = Color3.fromRGB(40,40,40)
+Toggle.BackgroundColor3 = Color3.fromRGB(35,35,35)
 Toggle.Text = text.." : OFF"
 Toggle.TextColor3 = Color3.new(1,1,1)
+Toggle.Font = Enum.Font.Gotham
+Toggle.TextSize = 14
 Toggle.Parent = Page
 
 local state = false
 
 Toggle.MouseButton1Click:Connect(function()
+
 state = not state
+
 Toggle.Text = text.." : "..(state and "ON" or "OFF")
+
 callback(state)
+
 end)
 
 end
+
+-------------------------------------------------
+-- SLIDER
+-------------------------------------------------
 
 function Tab:CreateSlider(text,min,max,callback)
 
 local Frame = Instance.new("Frame")
 Frame.Size = UDim2.new(1,-10,0,50)
-Frame.BackgroundColor3 = Color3.fromRGB(40,40,40)
+Frame.BackgroundColor3 = Color3.fromRGB(35,35,35)
 Frame.Parent = Page
 
 local Label = Instance.new("TextLabel")
 Label.Size = UDim2.new(1,0,0.5,0)
 Label.BackgroundTransparency = 1
-Label.TextColor3 = Color3.new(1,1,1)
 Label.Text = text
+Label.TextColor3 = Color3.new(1,1,1)
+Label.Font = Enum.Font.Gotham
+Label.TextSize = 14
 Label.Parent = Frame
 
 local Slider = Instance.new("TextButton")
-Slider.Size = UDim2.new(1,-20,0.3,0)
-Slider.Position = UDim2.new(0,10,0.6,0)
+Slider.Size = UDim2.new(1,-20,0,12)
+Slider.Position = UDim2.new(0,10,0.7,0)
 Slider.BackgroundColor3 = Color3.fromRGB(60,60,60)
 Slider.Text = ""
 Slider.Parent = Frame
@@ -196,19 +253,24 @@ local percent = math.clamp(
 1
 )
 
-local value = math.floor((min + (max-min)*percent))
+local value = math.floor(min + (max-min)*percent)
 
 Label.Text = text.." : "..value
 
 callback(value)
 
 end
+
 end)
 
 UIS.InputEnded:Connect(function(input)
+
 if input.UserInputType == Enum.UserInputType.MouseButton1 then
+
 move:Disconnect()
+
 end
+
 end)
 
 end)
@@ -223,4 +285,4 @@ return Window
 
 end
 
-return UI
+return MeerlyUI
