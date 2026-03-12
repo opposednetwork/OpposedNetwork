@@ -1,86 +1,90 @@
---// MeerlyUI - Simple Clean Hub Library
---// Designed to be easy to read and modify
+-- Opposed Network UI Library
+-- Clean, Modern, Easy to Modify
 
-local MeerlyUI = {}
-
+local OpposedUI = {}
 local UIS = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
-function MeerlyUI:CreateWindow(title)
+-- Color Theme
+local Theme = {
+    Background = Color3.fromRGB(18,18,18),
+    Sidebar = Color3.fromRGB(22,22,22),
+    Element = Color3.fromRGB(32,32,32),
+    Hover = Color3.fromRGB(45,45,45),
+    Accent = Color3.fromRGB(0,170,255),
+    Text = Color3.fromRGB(255,255,255)
+}
 
--------------------------------------------------
--- CREATE MAIN UI
--------------------------------------------------
+function OpposedUI:CreateWindow(title)
 
+-- MAIN GUI
 local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "OpposedNetworkUI"
 ScreenGui.Parent = game.CoreGui
 
+-- MAIN FRAME
 local Main = Instance.new("Frame")
-Main.Size = UDim2.new(0,650,0,420)
-Main.Position = UDim2.new(0.5,-325,0.5,-210)
-Main.BackgroundColor3 = Color3.fromRGB(18,18,18)
+Main.Size = UDim2.new(0,700,0,450)
+Main.Position = UDim2.new(0.5,-350,0.5,-225)
+Main.BackgroundColor3 = Theme.Background
 Main.Parent = ScreenGui
 
-local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0,8)
-MainCorner.Parent = Main
+Instance.new("UICorner",Main).CornerRadius = UDim.new(0,8)
 
--------------------------------------------------
--- TOP BAR
--------------------------------------------------
-
-local TopBar = Instance.new("TextLabel")
-TopBar.Size = UDim2.new(1,0,0,40)
-TopBar.BackgroundColor3 = Color3.fromRGB(24,24,24)
-TopBar.Text = title
-TopBar.TextColor3 = Color3.new(1,1,1)
-TopBar.Font = Enum.Font.GothamBold
-TopBar.TextSize = 16
+-- TOPBAR
+local TopBar = Instance.new("Frame")
+TopBar.Size = UDim2.new(1,0,0,45)
+TopBar.BackgroundColor3 = Theme.Sidebar
 TopBar.Parent = Main
 
--------------------------------------------------
--- SIDEBAR
--------------------------------------------------
+Instance.new("UICorner",TopBar).CornerRadius = UDim.new(0,8)
 
+local Title = Instance.new("TextLabel")
+Title.Text = title
+Title.Size = UDim2.new(1,0,1,0)
+Title.BackgroundTransparency = 1
+Title.TextColor3 = Theme.Text
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 16
+Title.Parent = TopBar
+
+-- SIDEBAR
 local Sidebar = Instance.new("Frame")
-Sidebar.Size = UDim2.new(0,160,1,-40)
-Sidebar.Position = UDim2.new(0,0,0,40)
-Sidebar.BackgroundColor3 = Color3.fromRGB(24,24,24)
+Sidebar.Size = UDim2.new(0,170,1,-45)
+Sidebar.Position = UDim2.new(0,0,0,45)
+Sidebar.BackgroundColor3 = Theme.Sidebar
 Sidebar.Parent = Main
 
-local TabLayout = Instance.new("UIListLayout")
-TabLayout.Parent = Sidebar
-TabLayout.Padding = UDim.new(0,6)
+local SidebarLayout = Instance.new("UIListLayout")
+SidebarLayout.Padding = UDim.new(0,8)
+SidebarLayout.Parent = Sidebar
 
--------------------------------------------------
+local SidebarPadding = Instance.new("UIPadding")
+SidebarPadding.PaddingTop = UDim.new(0,10)
+SidebarPadding.PaddingLeft = UDim.new(0,10)
+SidebarPadding.PaddingRight = UDim.new(0,10)
+SidebarPadding.Parent = Sidebar
+
 -- CONTENT AREA
--------------------------------------------------
-
 local Content = Instance.new("Frame")
-Content.Size = UDim2.new(1,-160,1,-40)
-Content.Position = UDim2.new(0,160,0,40)
+Content.Size = UDim2.new(1,-170,1,-45)
+Content.Position = UDim2.new(0,170,0,45)
 Content.BackgroundTransparency = 1
 Content.Parent = Main
 
--------------------------------------------------
--- DRAG SYSTEM
--------------------------------------------------
-
+-- DRAGGING SYSTEM
 local dragging
 local dragStart
 local startPos
 
 TopBar.InputBegan:Connect(function(input)
+
 if input.UserInputType == Enum.UserInputType.MouseButton1 then
 dragging = true
 dragStart = input.Position
 startPos = Main.Position
 end
-end)
 
-UIS.InputEnded:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseButton1 then
-dragging = false
-end
 end)
 
 UIS.InputChanged:Connect(function(input)
@@ -100,34 +104,33 @@ end
 
 end)
 
--------------------------------------------------
--- WINDOW FUNCTIONS
--------------------------------------------------
+UIS.InputEnded:Connect(function(input)
+if input.UserInputType == Enum.UserInputType.MouseButton1 then
+dragging = false
+end
+end)
+
+---------------------------------------------------
+-- WINDOW API
+---------------------------------------------------
 
 local Window = {}
 
 function Window:CreateTab(name)
 
--------------------------------------
 -- TAB BUTTON
--------------------------------------
-
 local TabButton = Instance.new("TextButton")
 TabButton.Size = UDim2.new(1,0,0,40)
-TabButton.BackgroundColor3 = Color3.fromRGB(30,30,30)
+TabButton.BackgroundColor3 = Theme.Element
 TabButton.Text = name
-TabButton.TextColor3 = Color3.new(1,1,1)
 TabButton.Font = Enum.Font.Gotham
+TabButton.TextColor3 = Theme.Text
 TabButton.TextSize = 14
 TabButton.Parent = Sidebar
 
-local Corner = Instance.new("UICorner")
-Corner.Parent = TabButton
+Instance.new("UICorner",TabButton).CornerRadius = UDim.new(0,6)
 
--------------------------------------
 -- PAGE
--------------------------------------
-
 local Page = Instance.new("ScrollingFrame")
 Page.Size = UDim2.new(1,0,1,0)
 Page.Visible = false
@@ -136,13 +139,16 @@ Page.BackgroundTransparency = 1
 Page.Parent = Content
 
 local Layout = Instance.new("UIListLayout")
+Layout.Padding = UDim.new(0,10)
 Layout.Parent = Page
-Layout.Padding = UDim.new(0,8)
 
--------------------------------------
--- SWITCH PAGE
--------------------------------------
+local Padding = Instance.new("UIPadding")
+Padding.PaddingTop = UDim.new(0,10)
+Padding.PaddingLeft = UDim.new(0,10)
+Padding.PaddingRight = UDim.new(0,10)
+Padding.Parent = Page
 
+-- TAB SWITCH
 TabButton.MouseButton1Click:Connect(function()
 
 for _,v in pairs(Content:GetChildren()) do
@@ -155,55 +161,57 @@ Page.Visible = true
 
 end)
 
--------------------------------------
--- TAB FUNCTIONS
--------------------------------------
+---------------------------------------------------
+-- TAB ELEMENTS
+---------------------------------------------------
 
 local Tab = {}
 
--------------------------------------------------
 -- BUTTON
--------------------------------------------------
-
 function Tab:CreateButton(text,callback)
 
 local Button = Instance.new("TextButton")
-Button.Size = UDim2.new(1,-10,0,40)
-Button.BackgroundColor3 = Color3.fromRGB(35,35,35)
+Button.Size = UDim2.new(1,0,0,38)
+Button.BackgroundColor3 = Theme.Element
 Button.Text = text
-Button.TextColor3 = Color3.new(1,1,1)
 Button.Font = Enum.Font.Gotham
 Button.TextSize = 14
+Button.TextColor3 = Theme.Text
 Button.Parent = Page
 
-local Corner = Instance.new("UICorner")
-Corner.Parent = Button
+Instance.new("UICorner",Button).CornerRadius = UDim.new(0,6)
+
+Button.MouseEnter:Connect(function()
+TweenService:Create(Button,TweenInfo.new(0.15),{BackgroundColor3 = Theme.Hover}):Play()
+end)
+
+Button.MouseLeave:Connect(function()
+TweenService:Create(Button,TweenInfo.new(0.15),{BackgroundColor3 = Theme.Element}):Play()
+end)
 
 Button.MouseButton1Click:Connect(callback)
 
 end
 
--------------------------------------------------
 -- TOGGLE
--------------------------------------------------
-
 function Tab:CreateToggle(text,callback)
 
 local Toggle = Instance.new("TextButton")
-Toggle.Size = UDim2.new(1,-10,0,40)
-Toggle.BackgroundColor3 = Color3.fromRGB(35,35,35)
+Toggle.Size = UDim2.new(1,0,0,38)
+Toggle.BackgroundColor3 = Theme.Element
 Toggle.Text = text.." : OFF"
-Toggle.TextColor3 = Color3.new(1,1,1)
 Toggle.Font = Enum.Font.Gotham
 Toggle.TextSize = 14
+Toggle.TextColor3 = Theme.Text
 Toggle.Parent = Page
+
+Instance.new("UICorner",Toggle).CornerRadius = UDim.new(0,6)
 
 local state = false
 
 Toggle.MouseButton1Click:Connect(function()
 
 state = not state
-
 Toggle.Text = text.." : "..(state and "ON" or "OFF")
 
 callback(state)
@@ -212,34 +220,36 @@ end)
 
 end
 
--------------------------------------------------
 -- SLIDER
--------------------------------------------------
-
 function Tab:CreateSlider(text,min,max,callback)
 
 local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(1,-10,0,50)
-Frame.BackgroundColor3 = Color3.fromRGB(35,35,35)
+Frame.Size = UDim2.new(1,0,0,50)
+Frame.BackgroundColor3 = Theme.Element
 Frame.Parent = Page
 
+Instance.new("UICorner",Frame).CornerRadius = UDim.new(0,6)
+
 local Label = Instance.new("TextLabel")
+Label.Text = text
 Label.Size = UDim2.new(1,0,0.5,0)
 Label.BackgroundTransparency = 1
-Label.Text = text
-Label.TextColor3 = Color3.new(1,1,1)
 Label.Font = Enum.Font.Gotham
+Label.TextColor3 = Theme.Text
 Label.TextSize = 14
 Label.Parent = Frame
 
-local Slider = Instance.new("TextButton")
-Slider.Size = UDim2.new(1,-20,0,12)
-Slider.Position = UDim2.new(0,10,0.7,0)
-Slider.BackgroundColor3 = Color3.fromRGB(60,60,60)
-Slider.Text = ""
-Slider.Parent = Frame
+local Bar = Instance.new("Frame")
+Bar.Size = UDim2.new(1,-20,0,6)
+Bar.Position = UDim2.new(0,10,1,-15)
+Bar.BackgroundColor3 = Color3.fromRGB(50,50,50)
+Bar.Parent = Frame
 
-Slider.MouseButton1Down:Connect(function()
+Instance.new("UICorner",Bar).CornerRadius = UDim.new(0,4)
+
+Bar.InputBegan:Connect(function(input)
+
+if input.UserInputType == Enum.UserInputType.MouseButton1 then
 
 local move
 
@@ -248,7 +258,7 @@ move = UIS.InputChanged:Connect(function(input)
 if input.UserInputType == Enum.UserInputType.MouseMovement then
 
 local percent = math.clamp(
-(input.Position.X - Slider.AbsolutePosition.X) / Slider.AbsoluteSize.X,
+(input.Position.X - Bar.AbsolutePosition.X) / Bar.AbsoluteSize.X,
 0,
 1
 )
@@ -264,14 +274,12 @@ end
 end)
 
 UIS.InputEnded:Connect(function(input)
-
 if input.UserInputType == Enum.UserInputType.MouseButton1 then
-
 move:Disconnect()
+end
+end)
 
 end
-
-end)
 
 end)
 
@@ -285,4 +293,4 @@ return Window
 
 end
 
-return MeerlyUI
+return OpposedUI
