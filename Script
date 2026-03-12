@@ -1,194 +1,226 @@
-local Library = {}
-Library.__index = Library
-
+local UI = {}
 local UIS = game:GetService("UserInputService")
 
-function Library:CreateWindow(title)
+function UI:CreateWindow(title)
 
-    local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Parent = game.CoreGui
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = game.CoreGui
 
-    local Main = Instance.new("Frame")
-    Main.Size = UDim2.new(0,600,0,400)
-    Main.Position = UDim2.new(0.5,-300,0.5,-200)
-    Main.BackgroundColor3 = Color3.fromRGB(25,25,25)
-    Main.Parent = ScreenGui
+local Main = Instance.new("Frame")
+Main.Size = UDim2.new(0,650,0,420)
+Main.Position = UDim2.new(0.5,-325,0.5,-210)
+Main.BackgroundColor3 = Color3.fromRGB(24,24,24)
+Main.Parent = ScreenGui
 
-    local TopBar = Instance.new("TextLabel")
-    TopBar.Size = UDim2.new(1,0,0,40)
-    TopBar.BackgroundColor3 = Color3.fromRGB(20,20,20)
-    TopBar.Text = title
-    TopBar.TextColor3 = Color3.new(1,1,1)
-    TopBar.Font = Enum.Font.SourceSansBold
-    TopBar.TextSize = 22
-    TopBar.Parent = Main
+local Top = Instance.new("TextLabel")
+Top.Size = UDim2.new(1,0,0,40)
+Top.BackgroundColor3 = Color3.fromRGB(18,18,18)
+Top.Text = title
+Top.TextColor3 = Color3.new(1,1,1)
+Top.TextSize = 20
+Top.Font = Enum.Font.GothamBold
+Top.Parent = Main
 
-    local Tabs = Instance.new("Frame")
-    Tabs.Size = UDim2.new(0,140,1,-40)
-    Tabs.Position = UDim2.new(0,0,0,40)
-    Tabs.BackgroundColor3 = Color3.fromRGB(30,30,30)
-    Tabs.Parent = Main
+local Tabs = Instance.new("Frame")
+Tabs.Size = UDim2.new(0,150,1,-40)
+Tabs.Position = UDim2.new(0,0,0,40)
+Tabs.BackgroundColor3 = Color3.fromRGB(28,28,28)
+Tabs.Parent = Main
 
-    local Pages = Instance.new("Frame")
-    Pages.Size = UDim2.new(1,-140,1,-40)
-    Pages.Position = UDim2.new(0,140,0,40)
-    Pages.BackgroundTransparency = 1
-    Pages.Parent = Main
+local Pages = Instance.new("Frame")
+Pages.Size = UDim2.new(1,-150,1,-40)
+Pages.Position = UDim2.new(0,150,0,40)
+Pages.BackgroundTransparency = 1
+Pages.Parent = Main
 
-    local dragging
-    local dragInput
-    local dragStart
-    local startPos
+local dragging
+local dragInput
+local dragStart
+local startPos
 
-    local function update(input)
-        local delta = input.Position - dragStart
-        Main.Position = UDim2.new(startPos.X.Scale,startPos.X.Offset + delta.X,startPos.Y.Scale,startPos.Y.Offset + delta.Y)
-    end
-
-    TopBar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            dragStart = input.Position
-            startPos = Main.Position
-
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)
-        end
-    end)
-
-    TopBar.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement then
-            dragInput = input
-        end
-    end)
-
-    UIS.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            update(input)
-        end
-    end)
-
-    local Window = {}
-
-    function Window:CreateTab(name)
-
-        local TabButton = Instance.new("TextButton")
-        TabButton.Size = UDim2.new(1,0,0,35)
-        TabButton.BackgroundColor3 = Color3.fromRGB(35,35,35)
-        TabButton.Text = name
-        TabButton.TextColor3 = Color3.new(1,1,1)
-        TabButton.Parent = Tabs
-
-        local Page = Instance.new("ScrollingFrame")
-        Page.Size = UDim2.new(1,0,1,0)
-        Page.Visible = false
-        Page.CanvasSize = UDim2.new(0,0,0,0)
-        Page.BackgroundTransparency = 1
-        Page.Parent = Pages
-
-        local Layout = Instance.new("UIListLayout")
-        Layout.Padding = UDim.new(0,6)
-        Layout.Parent = Page
-
-        TabButton.MouseButton1Click:Connect(function()
-            for _,v in pairs(Pages:GetChildren()) do
-                if v:IsA("ScrollingFrame") then
-                    v.Visible = false
-                end
-            end
-            Page.Visible = true
-        end)
-
-        local Tab = {}
-
-        function Tab:CreateButton(text,callback)
-
-            local Button = Instance.new("TextButton")
-            Button.Size = UDim2.new(1,-10,0,40)
-            Button.BackgroundColor3 = Color3.fromRGB(40,40,40)
-            Button.Text = text
-            Button.TextColor3 = Color3.new(1,1,1)
-            Button.Parent = Page
-
-            Button.MouseButton1Click:Connect(callback)
-
-        end
-
-        function Tab:CreateToggle(text,callback)
-
-            local Toggle = Instance.new("TextButton")
-            Toggle.Size = UDim2.new(1,-10,0,40)
-            Toggle.BackgroundColor3 = Color3.fromRGB(40,40,40)
-            Toggle.Text = text.." : OFF"
-            Toggle.TextColor3 = Color3.new(1,1,1)
-            Toggle.Parent = Page
-
-            local state = false
-
-            Toggle.MouseButton1Click:Connect(function()
-                state = not state
-                Toggle.Text = text.." : "..(state and "ON" or "OFF")
-                callback(state)
-            end)
-
-        end
-
-        function Tab:CreateSlider(text,min,max,callback)
-
-            local Frame = Instance.new("Frame")
-            Frame.Size = UDim2.new(1,-10,0,50)
-            Frame.BackgroundColor3 = Color3.fromRGB(40,40,40)
-            Frame.Parent = Page
-
-            local Label = Instance.new("TextLabel")
-            Label.Size = UDim2.new(1,0,0.5,0)
-            Label.BackgroundTransparency = 1
-            Label.Text = text
-            Label.TextColor3 = Color3.new(1,1,1)
-            Label.Parent = Frame
-
-            local Slider = Instance.new("TextButton")
-            Slider.Size = UDim2.new(1,-20,0.3,0)
-            Slider.Position = UDim2.new(0,10,0.6,0)
-            Slider.BackgroundColor3 = Color3.fromRGB(60,60,60)
-            Slider.Text = ""
-            Slider.Parent = Frame
-
-            Slider.MouseButton1Down:Connect(function()
-                local move
-                move = UIS.InputChanged:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseMovement then
-
-                        local percent = math.clamp(
-                            (input.Position.X - Slider.AbsolutePosition.X) / Slider.AbsoluteSize.X,
-                            0,
-                            1
-                        )
-
-                        local value = math.floor((min + (max-min)*percent))
-                        Label.Text = text.." : "..value
-
-                        callback(value)
-                    end
-                end)
-
-                UIS.InputEnded:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        move:Disconnect()
-                    end
-                end)
-
-            end)
-
-        end
-
-        return Tab
-    end
-
-    return Window
+local function update(input)
+local delta = input.Position - dragStart
+Main.Position = UDim2.new(
+startPos.X.Scale,
+startPos.X.Offset + delta.X,
+startPos.Y.Scale,
+startPos.Y.Offset + delta.Y
+)
 end
 
-return Library
+Top.InputBegan:Connect(function(input)
+if input.UserInputType == Enum.UserInputType.MouseButton1 then
+dragging = true
+dragStart = input.Position
+startPos = Main.Position
+
+input.Changed:Connect(function()
+if input.UserInputState == Enum.UserInputState.End then
+dragging = false
+end
+end)
+end
+end)
+
+Top.InputChanged:Connect(function(input)
+if input.UserInputType == Enum.UserInputType.MouseMovement then
+dragInput = input
+end
+end)
+
+UIS.InputChanged:Connect(function(input)
+if input == dragInput and dragging then
+update(input)
+end
+end)
+
+UIS.InputBegan:Connect(function(input)
+if input.KeyCode == Enum.KeyCode.RightShift then
+Main.Visible = not Main.Visible
+end
+end)
+
+local Window = {}
+
+function Window:Notify(text)
+
+local Notify = Instance.new("TextLabel")
+Notify.Size = UDim2.new(0,250,0,40)
+Notify.Position = UDim2.new(1,-260,1,-50)
+Notify.BackgroundColor3 = Color3.fromRGB(35,35,35)
+Notify.TextColor3 = Color3.new(1,1,1)
+Notify.Text = text
+Notify.Parent = ScreenGui
+
+task.wait(3)
+
+Notify:Destroy()
+
+end
+
+function Window:CreateTab(name)
+
+local TabButton = Instance.new("TextButton")
+TabButton.Size = UDim2.new(1,0,0,35)
+TabButton.Text = name
+TabButton.BackgroundColor3 = Color3.fromRGB(35,35,35)
+TabButton.TextColor3 = Color3.new(1,1,1)
+TabButton.Parent = Tabs
+
+local Page = Instance.new("ScrollingFrame")
+Page.Size = UDim2.new(1,0,1,0)
+Page.Visible = false
+Page.CanvasSize = UDim2.new(0,0,0,0)
+Page.BackgroundTransparency = 1
+Page.Parent = Pages
+
+local Layout = Instance.new("UIListLayout")
+Layout.Padding = UDim.new(0,6)
+Layout.Parent = Page
+
+TabButton.MouseButton1Click:Connect(function()
+for _,v in pairs(Pages:GetChildren()) do
+if v:IsA("ScrollingFrame") then
+v.Visible = false
+end
+end
+Page.Visible = true
+end)
+
+local Tab = {}
+
+function Tab:CreateButton(text,callback)
+
+local Button = Instance.new("TextButton")
+Button.Size = UDim2.new(1,-10,0,40)
+Button.BackgroundColor3 = Color3.fromRGB(40,40,40)
+Button.Text = text
+Button.TextColor3 = Color3.new(1,1,1)
+Button.Parent = Page
+
+Button.MouseButton1Click:Connect(callback)
+
+end
+
+function Tab:CreateToggle(text,callback)
+
+local Toggle = Instance.new("TextButton")
+Toggle.Size = UDim2.new(1,-10,0,40)
+Toggle.BackgroundColor3 = Color3.fromRGB(40,40,40)
+Toggle.Text = text.." : OFF"
+Toggle.TextColor3 = Color3.new(1,1,1)
+Toggle.Parent = Page
+
+local state = false
+
+Toggle.MouseButton1Click:Connect(function()
+state = not state
+Toggle.Text = text.." : "..(state and "ON" or "OFF")
+callback(state)
+end)
+
+end
+
+function Tab:CreateSlider(text,min,max,callback)
+
+local Frame = Instance.new("Frame")
+Frame.Size = UDim2.new(1,-10,0,50)
+Frame.BackgroundColor3 = Color3.fromRGB(40,40,40)
+Frame.Parent = Page
+
+local Label = Instance.new("TextLabel")
+Label.Size = UDim2.new(1,0,0.5,0)
+Label.BackgroundTransparency = 1
+Label.TextColor3 = Color3.new(1,1,1)
+Label.Text = text
+Label.Parent = Frame
+
+local Slider = Instance.new("TextButton")
+Slider.Size = UDim2.new(1,-20,0.3,0)
+Slider.Position = UDim2.new(0,10,0.6,0)
+Slider.BackgroundColor3 = Color3.fromRGB(60,60,60)
+Slider.Text = ""
+Slider.Parent = Frame
+
+Slider.MouseButton1Down:Connect(function()
+
+local move
+
+move = UIS.InputChanged:Connect(function(input)
+
+if input.UserInputType == Enum.UserInputType.MouseMovement then
+
+local percent = math.clamp(
+(input.Position.X - Slider.AbsolutePosition.X) / Slider.AbsoluteSize.X,
+0,
+1
+)
+
+local value = math.floor((min + (max-min)*percent))
+
+Label.Text = text.." : "..value
+
+callback(value)
+
+end
+end)
+
+UIS.InputEnded:Connect(function(input)
+if input.UserInputType == Enum.UserInputType.MouseButton1 then
+move:Disconnect()
+end
+end)
+
+end)
+
+end
+
+return Tab
+
+end
+
+return Window
+
+end
+
+return UI
