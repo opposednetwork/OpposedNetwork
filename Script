@@ -3,9 +3,9 @@ local PlaceId = game.PlaceId
 -- Game detection table
 local Games = {
 
-	[99248392277037] = "https://raw.githubusercontent.com/opposednetwork/OpposedNetwork/refs/heads/main/untitled%20melee%20rng",
+	[99248392277037] = "https://raw.githubusercontent.com/opposednetwork/OpposedNetwork/refs/heads/main/untitledmeleerng.lua",
 	
-	[119987266683883] = "https://raw.githubusercontent.com/opposednetwork/OpposedNetwork/refs/heads/main/survive%20lava"
+	[119987266683883] = "https://raw.githubusercontent.com/opposednetwork/OpposedNetwork/refs/heads/main/survivelava.lua"
 
 }
 
