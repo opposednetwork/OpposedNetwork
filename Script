@@ -9,6 +9,7 @@ local Games = {
 
 	[112490729816320] = "https://raw.githubusercontent.com/opposednetwork/OpposedNetwork/refs/heads/main/spinsoccer.lua",
 
+	[97365843755210] = "https://raw.githubusercontent.com/opposednetwork/OpposedNetwork/refs/heads/main/spinsoccer.lua",
 }
 
 -- Load correct script
