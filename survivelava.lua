@@ -23,7 +23,7 @@ end
 --// Window
 local Window = Luna:CreateWindow({
 	Name = "Opposed Network",
-	Subtitle = "Premium Script Hub",
+	Subtitle = "--- Survive LAVA for Brainrots!",
 	LogoID = "82795327169782",
 
 	LoadingEnabled = true,
