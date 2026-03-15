@@ -1,186 +1,22 @@
---[[
-  Opposed Network – Loader with KeyAuth
-  Uses KeyAuth (https://keyauth.cc) for keys: create/expire/lock keys in their dashboard.
-
-  Setup:
-  1. Create an app at https://keyauth.cc
-  2. Fill in KEYAUTH_OWNER_ID and KEYAUTH_APP_NAME below (find in app settings).
-  3. If you use HWID lock, set KEYAUTH_HWID to your executor's HWID or leave nil to skip.
-]]
-
 local PlaceId = game.PlaceId
-local HttpService = game:GetService("HttpService")
-local Players = game:GetService("Players")
 
+-- Game detection table
 local Games = {
-	[99248392277037] = "https://raw.githubusercontent.com/opposednetwork/OpposedNetwork/refs/heads/main/untitledmeleerng.lua",
-	[119987266683883] = "https://raw.githubusercontent.com/opposednetwork/OpposedNetwork/refs/heads/main/survivelava.lua",
-	[112490729816320] = "https://raw.githubusercontent.com/opposednetwork/OpposedNetwork/refs/heads/main/spinsoccer.lua",
-	[112371649846345] = "https://raw.githubusercontent.com/opposednetwork/OpposedNetwork/refs/heads/main/spinbrainrot.lua",
+
+[99248392277037] = "https://raw.githubusercontent.com/opposednetwork/OpposedNetwork/refs/heads/main/untitledmeleerng.lua",
+
+[119987266683883] = "https://raw.githubusercontent.com/opposednetwork/OpposedNetwork/refs/heads/main/survivelava.lua",
+
+[112490729816320] = "https://raw.githubusercontent.com/opposednetwork/OpposedNetwork/refs/heads/main/spinsoccer.lua",
+
+[97365843755210] = "https://raw.githubusercontent.com/opposednetwork/OpposedNetwork/refs/heads/main/spinbrainrot.lua",
+
+[112371649846345] = "https://raw.githubusercontent.com/opposednetwork/OpposedNetwork/refs/heads/main/spinbrainrot.lua",
 }
 
--- KeyAuth app settings (from https://keyauth.cc/app/?page=app-settings)
-local KEYAUTH_OWNER_ID = "Sb5lQw7yD2"
-local KEYAUTH_APP_NAME = "Opposed.net"
--- Optional: HWID if your KeyAuth app has HWID required (some executors expose this)
-local KEYAUTH_HWID = nil
-
-local KEYAUTH_BASE = "https://keyauth.win/api/1.3/"
-local SessionId = nil
-
-local function keyAuthInit()
-	local url = KEYAUTH_BASE .. "?type=init&name=" .. HttpService:UrlEncode(KEYAUTH_APP_NAME) .. "&ownerid=" .. HttpService:UrlEncode(KEYAUTH_OWNER_ID)
-	local ok, result = pcall(function()
-		return HttpService:GetAsync(url)
-	end)
-	if not ok then return nil, "Connection failed" end
-	local data = HttpService:JSONDecode(result)
-	if not data.success then
-		return nil, data.message or "Init failed"
-	end
-	SessionId = data.sessionid
-	return true
-end
-
-local function validateKey(key)
-	if not key or #key:gsub("%s", "") == 0 then return false, "Enter a key" end
-	if not SessionId then
-		local ok, err = keyAuthInit()
-		if not ok then return false, err end
-	end
-	local url = KEYAUTH_BASE .. "?type=license&key=" .. HttpService:UrlEncode(key:gsub("%s", ""))
-		.. "&sessionid=" .. HttpService:UrlEncode(SessionId)
-		.. "&name=" .. HttpService:UrlEncode(KEYAUTH_APP_NAME)
-		.. "&ownerid=" .. HttpService:UrlEncode(KEYAUTH_OWNER_ID)
-	if KEYAUTH_HWID and #KEYAUTH_HWID > 0 then
-		url = url .. "&hwid=" .. HttpService:UrlEncode(KEYAUTH_HWID)
-	end
-	local ok, result = pcall(function()
-		return HttpService:GetAsync(url)
-	end)
-	if not ok then return false, "Connection failed" end
-	local data = HttpService:JSONDecode(result)
-	return data.success == true, data.message or "Invalid key"
-end
-
-local function showKeyGate()
-	local gui = Instance.new("ScreenGui")
-	gui.Name = "OpposedKeyGate"
-	gui.ResetOnSpawn = false
-	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-	gui.Parent = game:GetService("CoreGui")
-
-	local blur = Instance.new("BlurEffect")
-	blur.Size = 12
-	blur.Parent = game:GetService("Lighting")
-
-	local frame = Instance.new("Frame")
-	frame.Size = UDim2.fromScale(0.35, 0.32)
-	frame.Position = UDim2.fromScale(0.5, 0.5)
-	frame.AnchorPoint = Vector2.new(0.5, 0.5)
-	frame.BackgroundColor3 = Color3.fromRGB(28, 28, 35)
-	frame.BorderSizePixel = 0
-	frame.Parent = gui
-
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 12)
-	corner.Parent = frame
-
-	local title = Instance.new("TextLabel")
-	title.Size = UDim2.fromScale(1, 0.2)
-	title.Position = UDim2.fromScale(0, 0.08)
-	title.BackgroundTransparency = 1
-	title.Text = "Opposed Network"
-	title.TextColor3 = Color3.fromRGB(255, 255, 255)
-	title.TextSize = 22
-	title.Font = Enum.Font.GothamBold
-	title.Parent = frame
-
-	local subtitle = Instance.new("TextLabel")
-	subtitle.Size = UDim2.fromScale(1, 0.1)
-	subtitle.Position = UDim2.fromScale(0, 0.26)
-	subtitle.BackgroundTransparency = 1
-	subtitle.Text = "Enter your key (KeyAuth)"
-	subtitle.TextColor3 = Color3.fromRGB(180, 180, 190)
-	subtitle.TextSize = 14
-	subtitle.Font = Enum.Font.Gotham
-	subtitle.Parent = frame
-
-	local box = Instance.new("TextBox")
-	box.Size = UDim2.fromScale(0.8, 0.12)
-	box.Position = UDim2.fromScale(0.1, 0.42)
-	box.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
-	box.BorderSizePixel = 0
-	box.PlaceholderText = "Paste your key"
-	box.PlaceholderColor3 = Color3.fromRGB(120, 120, 130)
-	box.TextColor3 = Color3.fromRGB(255, 255, 255)
-	box.TextSize = 16
-	box.Font = Enum.Font.Gotham
-	box.ClearTextOnFocus = false
-	box.Parent = frame
-
-	local boxCorner = Instance.new("UICorner")
-	boxCorner.CornerRadius = UDim.new(0, 8)
-	boxCorner.Parent = box
-
-	local status = Instance.new("TextLabel")
-	status.Size = UDim2.fromScale(0.8, 0.08)
-	status.Position = UDim2.fromScale(0.1, 0.58)
-	status.BackgroundTransparency = 1
-	status.Text = ""
-	status.TextColor3 = Color3.fromRGB(255, 120, 120)
-	status.TextSize = 12
-	status.Font = Enum.Font.Gotham
-	status.Parent = frame
-
-	local button = Instance.new("TextButton")
-	button.Size = UDim2.fromScale(0.5, 0.12)
-	button.Position = UDim2.fromScale(0.25, 0.72)
-	button.BackgroundColor3 = Color3.fromRGB(90, 70, 200)
-	button.BorderSizePixel = 0
-	button.Text = "Submit"
-	button.TextColor3 = Color3.fromRGB(255, 255, 255)
-	button.TextSize = 16
-	button.Font = Enum.Font.GothamBold
-	button.Parent = frame
-
-	local btnCorner = Instance.new("UICorner")
-	btnCorner.CornerRadius = UDim.new(0, 8)
-	btnCorner.Parent = button
-
-	button.MouseButton1Click:Connect(function()
-		status.Text = "Checking..."
-		status.TextColor3 = Color3.fromRGB(200, 200, 200)
-		local valid, errMsg = validateKey(box.Text)
-		if valid then
-			status.Text = "Key valid. Loading..."
-			status.TextColor3 = Color3.fromRGB(120, 255, 120)
-			_G.KeyValid = true
-			gui:Destroy()
-			blur.Size = 0
-			if Games[PlaceId] then
-				loadstring(game:HttpGet(Games[PlaceId]))()
-			else
-				warn("Opposed Network: Game not supported.")
-			end
-		else
-			status.Text = errMsg or "Invalid key"
-			status.TextColor3 = Color3.fromRGB(255, 120, 120)
-		end
-	end)
-
-	return gui
-end
-
--- Init KeyAuth once, then show key gate or load script
-if _G.KeyValid and Games[PlaceId] then
-	loadstring(game:HttpGet(Games[PlaceId]))()
-elseif Games[PlaceId] then
-	local ok, err = keyAuthInit()
-	if not ok then
-		warn("Opposed Network: KeyAuth init failed - " .. tostring(err))
-	end
-	showKeyGate()
+-- Load correct script
+if Games[PlaceId] then
+loadstring(game:HttpGet(Games[PlaceId]))()
 else
-	warn("Opposed Network: Game not supported.")
+warn("Opposed Network: Game not supported.")
 end
